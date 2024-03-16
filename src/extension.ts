@@ -1,6 +1,11 @@
 import * as vscode from 'vscode';
-import fetch from 'node-fetch';
+import nodeFetch from 'node-fetch';
 import { groupBy as _groupBy } from 'lodash';
+
+function fetch(url: string) {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  return nodeFetch(url, { headers: { "User-Agent": "crates-completer VSCode Extension https://github.com/jedeop/crates-completer" } });
+}
 
 const CARGO_MODE: vscode.DocumentSelector = { language: 'toml', pattern: '**/Cargo.toml' };
 const CRATES_IO_SEARCH_URL = 'https://crates.io/api/v1/crates?page=1&per_page=10&q=';
@@ -18,18 +23,18 @@ interface CrateVersion {
 }
 
 function isInDependencies(document: vscode.TextDocument, cursorLine: number): boolean {
-    let regex = /^\s*\[(.+)\]/ig;
-    let line = cursorLine - 1;
-    let isInDependencies = false;
-    while (line > 0) {
-      let attr = regex.exec(document.lineAt(line).text);
-      if (attr) {
-        isInDependencies = attr[1].includes('dependencies');
-        break;
-      }
-      line--;
+  let regex = /^\s*\[(.+)\]/ig;
+  let line = cursorLine - 1;
+  let isInDependencies = false;
+  while (line > 0) {
+    let attr = regex.exec(document.lineAt(line).text);
+    if (attr) {
+      isInDependencies = attr[1].includes('dependencies');
+      break;
     }
-    return isInDependencies;
+    line--;
+  }
+  return isInDependencies;
 }
 function getTextBeforeCursor(document: vscode.TextDocument, position: vscode.Position): string {
   const range = new vscode.Range(position.line, 0, position.line, position.character);
